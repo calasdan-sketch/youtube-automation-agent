@@ -346,6 +346,43 @@ class CredentialManager {
     console.log(chalk.green('GLM credentials configured successfully!'));
   }
 
+  // Custom OpenAI-compatible endpoint (freellmapi, Ollama, LM Studio…)
+  async setupCustomCredentials() {
+    console.log(chalk.cyan('\nCustom Endpoint Setup'));
+    console.log(chalk.gray('Any OpenAI-compatible API: freellmapi, Ollama, LM Studio, etc.'));
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'baseURL',
+        message: 'Endpoint base URL (e.g. http://localhost:11434/v1):',
+        validate: input => /^https?:\/\/.+/.test(input) || 'Must start with http:// or https://'
+      },
+      {
+        type: 'password',
+        name: 'apiKey',
+        message: 'API key (or "ollama" for keyless local servers):',
+        validate: input => input.length > 0 || 'API key is required'
+      },
+      {
+        type: 'input',
+        name: 'model',
+        message: 'Model name:',
+        validate: input => input.length > 0 || 'Model name is required'
+      }
+    ]);
+
+    this.credentials.aiProvider = {
+      provider: 'custom',
+      baseURL: answers.baseURL.replace(/\/$/, ''),
+      apiKey: answers.apiKey,
+      model: answers.model
+    };
+
+    await this.saveCredentials();
+    console.log(chalk.green('Custom endpoint configured successfully!'));
+  }
+
   // Azure Speech Services (TTS)
   async setupAzureSpeechCredentials() {
     console.log(chalk.cyan('\n🎙️  Azure Speech Services Setup'));
@@ -640,6 +677,7 @@ class CredentialManager {
           { name: 'Kimi (Moonshot AI — K3)', value: 'kimi' },
           { name: 'MiMo (Xiaomi — V2.5 Pro)', value: 'mimo' },
           { name: 'GLM (Zhipu AI — GLM-5.3)', value: 'glm' },
+          { name: 'Custom (OpenAI-compatible endpoint — freellmapi, Ollama, …)', value: 'custom' },
         ]
       }
     ]);
@@ -651,6 +689,7 @@ class CredentialManager {
       case 'kimi': return await this.setupKimiCredentials();
       case 'mimo': return await this.setupMiMoCredentials();
       case 'glm': return await this.setupGLMCredentials();
+      case 'custom': return await this.setupCustomCredentials();
     }
   }
 

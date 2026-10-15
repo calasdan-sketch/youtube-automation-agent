@@ -61,6 +61,15 @@ class AITextService {
     const provider = credentials.aiProvider?.provider;
     const apiKey = credentials.aiProvider?.apiKey;
     const model = credentials.aiProvider?.model;
+    const baseURL = credentials.aiProvider?.baseURL;
+
+    // Custom OpenAI-compatible endpoint (freellmapi, Ollama, etc.) —
+    // baseURL wins over any named preset.
+    if (baseURL && apiKey) {
+      return this._initOpenAICompatible(
+        { name: 'Custom', baseURL, defaultModel: model || 'default' },
+        apiKey, model);
+    }
 
     if (provider && PROVIDERS[provider] && apiKey) {
       return this._initOpenAICompatible(PROVIDERS[provider], apiKey, model);
