@@ -654,7 +654,17 @@ class CredentialManager {
 
     for (const step of setupSteps) {
       console.log(chalk.cyan(`\n${step.name}`));
-      await step.action();
+      const { doit } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'doit',
+        message: `Set up ${step.name} now?`,
+        default: true
+      }]);
+      if (doit) {
+        await step.action();
+      } else {
+        console.log(chalk.gray('  Skipped — re-run the wizard anytime to set this up later.'));
+      }
     }
 
     console.log(chalk.green.bold('\n🎉 Setup completed successfully!'));
