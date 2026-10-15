@@ -644,21 +644,26 @@ class CredentialManager {
     console.log(chalk.cyan.bold('\n🚀 YouTube Automation Agent Setup Wizard'));
     console.log(chalk.gray('Let\'s configure your credentials and settings...\n'));
 
+    // YouTube defaults to "no": nothing uploads or schedules without the
+    // user's explicit approval anyway, and the Google Cloud project dance
+    // is the #1 place people get stuck. They can add it later by re-running.
     const setupSteps = [
-      { name: '🎬 YouTube API', action: () => this.setupYouTubeCredentials() },
-      { name: '🤖 AI Service (OpenAI/Gemini)', action: () => this.setupAIService() },
-      { name: '🎙️  Text-to-Speech Service', action: () => this.setupTTSService() },
-      { name: '📺 Channel Configuration', action: () => this.setupChannelConfig() },
-      { name: '📝 Content Configuration', action: () => this.setupContentConfig() }
+      { name: '🎬 YouTube API', action: () => this.setupYouTubeCredentials(), defaultYes: false,
+        hint: 'skip this for now — nothing uploads or schedules without your approval' },
+      { name: '🤖 AI Service (OpenAI/Gemini)', action: () => this.setupAIService(), defaultYes: true },
+      { name: '🎙️  Text-to-Speech Service', action: () => this.setupTTSService(), defaultYes: true },
+      { name: '📺 Channel Configuration', action: () => this.setupChannelConfig(), defaultYes: true },
+      { name: '📝 Content Configuration', action: () => this.setupContentConfig(), defaultYes: true }
     ];
 
     for (const step of setupSteps) {
       console.log(chalk.cyan(`\n${step.name}`));
+      if (step.hint) console.log(chalk.gray(`  ${step.hint}`));
       const { doit } = await inquirer.prompt([{
         type: 'confirm',
         name: 'doit',
         message: `Set up ${step.name} now?`,
-        default: true
+        default: step.defaultYes
       }]);
       if (doit) {
         await step.action();
